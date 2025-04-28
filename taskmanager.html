@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Task Manager</title>
+  <style>
+    /* Animated Gradient Background */
+    body {
+      background: linear-gradient(-45deg, #a9746e, #d2b48c, #c3a384, #e0c9a6);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #5c4033;
+    }
+
+    @keyframes gradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    /* Custom Font Setup for Browns */
+    @font-face {
+      font-family: 'Rocher';
+      src: url(https://assets.codepen.io/9632/RocherColorGX.woff2);
+    }
+
+    @font-palette-values --Browns {
+      font-family: Rocher;
+      base-palette: 11; /* Adjust this value for brown shades */
+    }
+
+    @font-palette-values --Tans {
+      font-family: Rocher;
+      base-palette: 10; /* Adjust this value for tan shades */
+    }
+
+    .browns {
+      font-palette: --Browns;
+    }
+
+    .tans {
+      font-palette: --Tans;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-top: 30px;
+      font-family: 'Rocher', sans-serif;
+      color: #5c4033;
+      text-align: center;
+    }
+
+    /* Task Manager Styles */
+    .task-form {
+      background: #fff;
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(109, 76, 65, 0.2);
+      margin-top: 20px;
+      width: 340px;
+      text-align: center;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      border: 2px solid #d7ccc8; /* Soft border color */
+      font-size: 1rem;
+      box-shadow: 0px 4px 6px rgba(109, 76, 65, 0.1); /* Soft shadow for a cute look */
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: #8d6e63; /* Darker brown border on focus */
+      outline: none;
+    }
+
+    #taskmanager {
+      margin-top: 30px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .task {
+      background-color: #fff;
+      border-left: 5px solid #8d6e63;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0px 6px 10px rgba(109, 76, 65, 0.1);
+      flex-wrap: wrap;
+    }
+
+    .task.important {
+      background-color: #efebe9;
+    }
+
+    .task.completed {
+      background-color: #d7ccc8;
+      text-decoration: line-through;
+    }
+
+    .button-56 {
+      background-color: #8d6e63;
+      border: none;
+      color: white;
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+      transition: background 0.3s;
+      font-family: 'Rocher', sans-serif; /* Matching font style */
+    }
+
+    .button-56:hover {
+      background-color: #6d4c41;
+    }
+
+    label {
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    .task-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .priority-emoji {
+      font-size: 1.5rem;
+    }
+
+    /* Color Fonts */
+    .browns {
+      font-palette: --Browns;
+    }
+    
+    h1.browns {
+      font-family: 'Rocher', sans-serif;
+      font-size: 3rem;
+      color: #5c4033;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Heading with Color Fonts -->
+  <h1 class="browns">Task Manager</h1>
+
+  <!-- Task Input Form -->
+  <div class="task-form">
+    <label for="taskName">Task Name:</label>
+    <input type="text" id="taskName" placeholder="Enter task name" />
+
+    <label for="taskPriority">Priority:</label>
+    <select id="taskPriority">
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+    </select>
+
+    <label for="taskImportant">
+      <input type="checkbox" id="taskImportant" /> Mark as Important
+    </label>
+
+    <button id="submitBtn" class="button-56" role="button">Add Task</button>
+  </div>
+
+  <!-- Task Display Section -->
+  <div id="taskmanager"></div>
+
+  <script>
+    let tasks = [];
+
+    function createTask(name, priority, isImportant) {
+      return {
+        id: tasks.length + 1,
+        name: name,
+        priority: priority,
+        isImportant: isImportant,
+        isCompleted: false,
+        date: new Date().toLocaleString()
+      };
+    }
+
+    function addTaskToDisplay(task) {
+      const taskDiv = document.createElement('div');
+      taskDiv.classList.add('task');
+      taskDiv.id = `task-${task.id}`;
+
+      if (task.isImportant) {
+        taskDiv.classList.add('important');
+      }
+
+      if (task.isCompleted) {
+        taskDiv.classList.add('completed');
+      }
+
+      // Emoji based on priority
+      let emoji = '';
+      if (task.priority === 'high') {
+        emoji = '🌟';
+      } else if (task.priority === 'medium') {
+        emoji = '⭐';
+      } else if (task.priority === 'low') {
+        emoji = '🔅';
+      }
+
+      taskDiv.innerHTML = `
+        <div class="task-content">
+          <span class="priority-emoji">${emoji}</span>
+          <div>
+            <strong>${task.name}</strong> <small>(${task.priority})</small><br>
+            <small>${task.date}</small>
+          </div>
+        </div>
+        <div>
+          <button class="button-56" role="button" onclick="toggleTaskCompletion(${task.id})">Complete</button>
+          <button class="button-56" role="button" onclick="deleteTask(${task.id})">Delete</button>
+        </div>
+      `;
+
+      document.getElementById('taskmanager').appendChild(taskDiv);
+    }
+
+    function toggleTaskCompletion(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      task.isCompleted = !task.isCompleted;
+      document.getElementById(`task-${taskId}`).classList.toggle('completed');
+    }
+
+    function deleteTask(taskId) {
+      tasks = tasks.filter(task => task.id !== taskId);
+      document.getElementById(`task-${taskId}`).remove();
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      const taskName = document.getElementById('taskName').value;
+      const taskPriority = document.getElementById('taskPriority').value;
+      const taskImportant = document.getElementById('taskImportant').checked;
+
+      if (taskName.trim() === "") {
+        alert("Please enter a task name.");
+        return;
+      }
+
+      const newTask = createTask(taskName, taskPriority, taskImportant);
+      tasks.push(newTask);
+      addTaskToDisplay(newTask);
+
+      // Reset form
+      document.getElementById('taskName').value = '';
+      document.getElementById('taskPriority').value = 'high';
+      document.getElementById('taskImportant').checked = false;
+    });
+  </script>
+
+</body>
+</html>
